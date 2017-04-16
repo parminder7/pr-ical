@@ -1,26 +1,4 @@
-/**
- * @license
- * Everything in this repo is MIT License unless otherwise specified.
- *
- * Copyright (c) Addy Osmani, Sindre Sorhus, Pascal Hartig, Stephen  Sawchuk, Google, Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+ // Use npm install node-gyp-install && ./node_modules/node-gyp-install/bin.js
 
 	// set up ========================
 	var express  = require('express');
@@ -35,8 +13,8 @@
 
 	mongoose.connect('mongodb://' + argv.be_ip + ':80/my_database');
 
-    	app.use('/js', express.static(__dirname + '/js'));
-   	 app.use('/bower_components', express.static(__dirname + '/bower_components'));
+  app.use('/js', express.static(__dirname + '/js'));
+  app.use('/bower_components', express.static(__dirname + '/bower_components'));
 	app.use(morgan('dev')); 										// log every request to the console
 	app.use(bodyParser.urlencoded({'extended':'true'})); 			// parse application/x-www-form-urlencoded
 	app.use(bodyParser.json()); 									// parse application/json
@@ -49,12 +27,20 @@
 		completed: Boolean
 	});
 
+	// define modal for hisab-kitab
+	var Hisab = mongoose.model('Hisab', {
+		date: String,
+		item: String,
+		rate: Number,
+		member: String,
+		category: String
+	});
+
 	// routes ======================================================================
 
 	// api ---------------------------------------------------------------------
 	// get all todos
 	app.get('/api/todos', function(req, res) {
-
 		// use mongoose to get all todos in the database
 		Todo.find(function(err, todos) {
 
@@ -68,7 +54,6 @@
 
 	// create todo and send back all todos after creation
 	app.post('/api/todos', function(req, res) {
-
 		// create a todo, information comes from AJAX request from Angular
 		Todo.create({
 			title : req.body.title,
@@ -76,7 +61,6 @@
 		}, function(err, todo) {
 			if (err)
 				res.send(err);
-
 			// get and return all the todos after you create another
 			Todo.find(function(err, todos) {
 				if (err)
@@ -113,6 +97,34 @@
 				if (err)
 					res.send(err)
 				res.json(todos);
+			});
+		});
+	});
+
+	app.get('/api/getInitialInfo', function(req, res) {
+		var result = {
+			'category': ['Gas', 'Grocery', 'Eating-Out', 'Parking', 'Shopping', 'Other-Car Related', 'Other'],
+			'members': ['Ravjot', 'Parminder']
+		};
+		res.json(result);
+	});
+
+	// create hisab and send back all hisabs after creation
+	app.post('/api/hisab', function(req, res) {
+		debugger;
+		Hisab.create({
+			date: req.body.date || Date.now(),
+			item: req.body.item,
+			rate: req.body.rate,
+			member: req.body.member,
+			category: req.body.category || 'Other'
+		}, function(err, hisab){
+			if (err)
+				res.send(err);
+			Hisab.find(function(err, hisabs){
+				if (err)
+					res.send(err);
+				res.json(hisabs);
 			});
 		});
 	});
